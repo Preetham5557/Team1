@@ -1,8 +1,7 @@
 const express = require("express");
 const router = express.Router();
-// ✅ Use pool for queries
-const pool = require("../models/db"); 
-// ✅ Import the token verification middleware
+const pool = require("../models/db");
+// Note: Assumes you have the correct import for auth
 const { verifyToken } = require("../controllers/middleware/auth"); 
 require("dotenv").config(); 
 
@@ -11,7 +10,7 @@ const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
 // ------------------- ROUTES -------------------
 
-// ✅ Create Stripe Payment Intent (Client Handshake)
+// ✅ Create Stripe Payment Intent
 router.post("/create-intent", verifyToken, async (req, res) => {
   try {
     const { amount, currency = "usd", booking_id } = req.body;
@@ -22,13 +21,11 @@ router.post("/create-intent", verifyToken, async (req, res) => {
     }
 
     const paymentIntent = await stripe.paymentIntents.create({
-      amount: Math.floor(amount), // amount in cents
+      amount: Math.floor(amount), 
       currency,
       automatic_payment_methods: { enabled: true },
       metadata: { user_id, booking_id },
     });
-
-    console.log("✅ Stripe PaymentIntent created:", paymentIntent.id);
 
     res.json({ clientSecret: paymentIntent.client_secret });
   } catch (err) {
@@ -37,13 +34,13 @@ router.post("/create-intent", verifyToken, async (req, res) => {
   }
 });
 
-// ✅ Confirm payment and record it in database (FIXED)
+// ✅ Confirm payment and record it in database (CLEANED)
 router.post("/confirm", verifyToken, async (req, res) => {
   try {
     let { booking_id, amount, payment_method = "stripe" } = req.body;
     const user_id = req.user?.user_id;
 
-    // 1. HARDENED VALIDATION (Fixes 400 Bad Request)
+    // 1. HARDENED VALIDATION (Prevents 400 Bad Request)
     if (!user_id) {
       return res.status(400).json({ message: "User ID missing from token." });
     }
@@ -62,18 +59,19 @@ router.post("/confirm", verifyToken, async (req, res) => {
       payment_method = "stripe";
     }
 
-    // 3. Database Insertion (Set payment status to 'completed')
+    // 3. Database Insertion (Record the transaction)
     const [result] = await pool.query(
       `INSERT INTO payments (booking_id, user_id, amount, payment_method, status)
-       VALUES (?, ?, ?, ?, 'completed')`,
+       VALUES (?, ?, ?, ?, 'completed')`, // Status is completed here
       [booking_id, user_id, amount, payment_method]
     );
 
-    // 4. Update booking status from 'pending' to 'confirmed'
+    // 4. Update the Booking Status from 'pending' to 'confirmed'
     await pool.query(
         "UPDATE bookings SET status = 'confirmed' WHERE booking_id = ?", 
         [booking_id]
     );
+
 
     res.json({
       message: "✅ Payment recorded successfully and booking confirmed",
@@ -95,7 +93,6 @@ router.post("/confirm", verifyToken, async (req, res) => {
 // ✅ Get all payments (Admin only)
 router.get("/", verifyToken, async (req, res) => {
   try {
-    // Basic Admin check (You would ideally use authorizeRoles here)
     if (req.user.role !== 'admin') {
       return res.status(403).json({ message: "Access denied. Admins only." });
     }
@@ -110,7 +107,6 @@ router.get("/", verifyToken, async (req, res) => {
     `);
     res.json({ payments: rows });
   } catch (err) {
-    console.error("❌ Error fetching all payments:", err);
     res.status(500).json({ message: "Server error while fetching payments" });
   }
 });
@@ -133,7 +129,6 @@ router.get("/my", verifyToken, async (req, res) => {
 
     res.json({ payments: rows });
   } catch (err) {
-    console.error("❌ Error fetching user payments:", err);
     res.status(500).json({ message: "Server error while fetching payments" });
   }
 });
