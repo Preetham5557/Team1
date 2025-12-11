@@ -32,7 +32,7 @@ function OrganizerDashboard() {
   // 1. Fetch Events
   const fetchMyEvents = async () => {
     try {
-      const res = await axios.get("http://localhost:5001/api/events/my-events", authConfig);
+      const res = await api.post("/events", data);
       setMyEvents(res.data);
     } catch (err) { console.error(err); }
   };

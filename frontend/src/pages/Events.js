@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+// 1. IMPORT YOUR NEW API UTILITY (No more direct axios)
+import api from "../api/axios"; 
 import { useNavigate } from "react-router-dom";
 
 const Events = () => {
@@ -13,8 +14,8 @@ const Events = () => {
   const fetchEvents = async () => {
     setLoading(true);
     try {
-      // Note: This URL will eventually use your .env variable
-      const res = await axios.get("http://localhost:5001/api/events", {
+      // ✅ USE API UTILITY: Auto-detects Local vs Live URL
+      const res = await api.get("/events", {
         params: filters 
       });
       setEvents(res.data);
@@ -32,9 +33,8 @@ const Events = () => {
     if (!token) return alert("Please Login first!");
     
     try {
-      await axios.post("http://localhost:5001/api/bookings", { event_id: eventId }, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      // ✅ USE API UTILITY: Auto-attaches Token (via interceptor)
+      await api.post("/bookings", { event_id: eventId });
       
       if (Number(price) > 0) {
         alert("🎉 Booking Reserved! Redirecting to Payment...");
