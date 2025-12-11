@@ -130,7 +130,7 @@ const Events = () => {
                     
                     {/* ✅ CRASH PREVENTION: Safe substring */}
                     <p className="card-text text-secondary small flex-grow-1">
-                      {description.substring(0, 100)}...
+                      {description.substring(0, 200)}...
                     </p>
 
                     <button 

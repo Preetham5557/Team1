@@ -75,9 +75,9 @@ router.post("/", authenticateToken, upload.single("image"), async (req, res) => 
     
     let imageUrl = "https://via.placeholder.com/300";
     if (req.file) {
-      const protocol = req.headers['x-forwarded-proto'] || req.protocol; 
-      const host = req.get('host'); 
-      imageUrl = `${protocol}://${host}/uploads/${req.file.filename}`;
+      // ✅ FIX: Use the fixed, public domain from the environment variable (Render URL)
+      const backendUrl = process.env.BACKEND_URL || `${req.headers['x-forwarded-proto'] || req.protocol}://${req.get('host')}`;
+      imageUrl = `${backendUrl}/uploads/${req.file.filename}`;
     }
 
     const finalCapacity = capacity || 100;
