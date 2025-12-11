@@ -1,8 +1,8 @@
-// /src/pages/Payments.js
+/// /src/pages/Payments.js
 import React, { useEffect, useMemo, useState } from "react";
-// ✅ IMPORT useLocation for receiving data
 import { useNavigate, useLocation } from "react-router-dom"; 
-import axios from "../api/axiosConfig";
+// Assuming this is axiosConfig.js or similar
+import axios from "../api/axiosConfig"; 
 import { loadStripe } from "@stripe/stripe-js";
 import {
   Elements,
@@ -11,10 +11,12 @@ import {
   useElements,
 } from "@stripe/react-stripe-js";
 
-// ✅ Load publishable key from .env (Assumes you set this in Vercel)
-const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY || "pk_test_placeholder");
+// ✅ Load publishable key from .env (Use a dummy key if the real one isn't loading)
+// This must be checked against Vercel Environment Variables
+const PUBLISHABLE_KEY = process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY;
+const stripePromise = PUBLISHABLE_KEY ? loadStripe(PUBLISHABLE_KEY) : null;
 
-// --- Checkout Form remains the same, but uses the injected variables ---
+
 function CheckoutForm({ selectedBookingId, amountInput, onResult }) {
   const stripe = useStripe();
   const elements = useElements();
@@ -31,9 +33,12 @@ function CheckoutForm({ selectedBookingId, amountInput, onResult }) {
     e.preventDefault();
     setMsg("");
 
-    if (!stripe || !elements) return;
+    if (!stripe || !elements) {
+      setMsg("Stripe is not ready yet.");
+      return;
+    }
     
-    // ⚠️ This now relies on the parent component to provide a non-empty ID
+    // ⚠️ CRITICAL VALIDATION
     if (!selectedBookingId) {
       setMsg("Error: Missing Booking ID. Please go back to Events.");
       return;
@@ -91,7 +96,6 @@ function CheckoutForm({ selectedBookingId, amountInput, onResult }) {
 
   return (
     <form onSubmit={handlePay} style={{ maxWidth: 420, marginTop: 16 }}>
-      {/* ... JSX remains the same ... */}
       <div style={{border: "1px solid #ddd", padding: 12, borderRadius: 8, marginBottom: 12, background: "#fff",}}>
         <CardElement options={{ hidePostalCode: false }} />
       </div>
@@ -112,7 +116,7 @@ function CheckoutForm({ selectedBookingId, amountInput, onResult }) {
 
 export default function Payments() {
   const navigate = useNavigate();
-  const location = useLocation(); // ✅ Access data sent from Events.js
+  const location = useLocation(); 
   
   // 1. Try to get data from navigation state
   const incomingBookingId = location.state?.bookingId;
@@ -123,14 +127,20 @@ export default function Payments() {
   const [amount, setAmount] = useState(incomingPrice || "19.99");
   const [statusMsg, setStatusMsg] = useState("");
 
-  // 3. Optional: Redirect if no booking ID is provided (if accessed directly)
-  useEffect(() => {
-    if (!incomingBookingId && !selectedBookingId) {
-       // Only redirect if this is the first time loading and no manual ID is set
-       // navigate("/events"); 
-    }
-  }, [incomingBookingId, selectedBookingId, navigate]);
+  // 3. CRITICAL KEY CHECK
+  if (!stripePromise) {
+    return (
+      <div className="container mt-5" style={{ maxWidth: "500px" }}>
+        <div className="alert alert-danger text-center">
+          <h4>❌ Stripe Key Error</h4>
+          <p>The **Stripe Publishable Key** is missing from Vercel's environment variables. Contact the admin.</p>
+        </div>
+      </div>
+    );
+  }
 
+  // NOTE: If you wanted to load pending bookings here, you would need to adjust the logic.
+  // Currently, we rely purely on the incoming navigation state.
 
   return (
     <div className="container mt-5" style={{ maxWidth: "500px" }}>
