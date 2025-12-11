@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 // 1. IMPORT YOUR NEW API UTILITY (No more direct axios)
-import api from "../api/axios"; 
+import api from "../api/axiosConfig";
 import { useNavigate } from "react-router-dom";
 
 const Events = () => {

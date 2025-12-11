@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 // ✅ IMPORT YOUR API TOOL (Adjust path if needed, e.g. '../api/axios')
-import api from "../api/axios"; 
+import api from "../api/axiosConfig"; 
 
 export default function Register() {
   const [formData, setFormData] = useState({

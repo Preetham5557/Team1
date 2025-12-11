@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 // ✅ IMPORT API UTILITY (Adjust path if needed, e.g., '../util/api')
-import api from "../api/axios"; 
+import api from "../api/axiosConfig";
 import { QRCodeCanvas } from "qrcode.react";
 
 const Bookings = () => {

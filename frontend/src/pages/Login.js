@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import api from "../axios";
+import api from "../api/axiosConfig";
 import { Link } from "react-router-dom"; // 👈 Import Link for the Forgot Password button
 
 function Login() {

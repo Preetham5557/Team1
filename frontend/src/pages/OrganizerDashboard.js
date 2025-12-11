@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 // ✅ IMPORT API UTILITY
-import api from "../api/axios"; 
+import api from "../api/axiosConfig";
 
 function OrganizerDashboard() {
   const [myEvents, setMyEvents] = useState([]);
