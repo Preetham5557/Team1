@@ -8,11 +8,22 @@ const db = require("./models/db");
 const app = express();
 
 // ✅ CORS Configuration (Fixed)
+const cors = require("cors"); // Ensure this is imported
+
 app.use(cors({
-  origin: ["http://localhost:3000", "https://team1-kohl.vercel.app"],
+  origin: function (origin, callback) {
+    // allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    // ✅ Allow Localhost + ANY Vercel App
+    if (origin.includes("localhost") || origin.includes(".vercel.app")) {
+      return callback(null, true);
+    }
+    
+    return callback(new Error('Not allowed by CORS'));
+  },
   credentials: true
 }));
-
 // ✅ SERVE STATIC IMAGES
 // This allows the frontend to access images at http://localhost:5001/uploads/filename.jpg
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
