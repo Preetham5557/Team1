@@ -92,7 +92,7 @@ const Events = () => {
             // ✅ DEFENSIVE CODE: Handle missing/null data safely
             const isSoldOut = (ev.available_seats || 0) <= 0;
             const description = ev.description || "No description available.";
-            const imageUrl = ev.image_url || "https://via.placeholder.com/300";
+            const imageUrl = ev.image_url || "https://placehold.co/300";
             const location = ev.location || "Online";
             const price = Number(ev.price) || 0;
             
@@ -104,7 +104,7 @@ const Events = () => {
                   <div style={{ position: "relative" }}>
                     <img src={imageUrl} className="card-img-top" 
                         style={{height: "200px", objectFit: "cover"}} alt="Event" 
-                        onError={(e) => e.target.src = "https://via.placeholder.com/300"} // 👈 Fallback if image fails
+                        onError={(e) => e.target.src = "https://placehold.co/300"} // 👈 Fallback if image fails
                     />
                     
                     <span 
